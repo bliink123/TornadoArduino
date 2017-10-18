@@ -1,0 +1,64 @@
+<html>
+    <script language="javascript" type="text/javascript">
+     
+     function init()
+     {
+	 websocket = new WebSocket("ws://localhost:8888/websocket");
+	 websocket.onopen = onOpen;
+	 websocket.onmessage = onMessage;
+	 //websocket.send = sendMsg;
+     }
+
+     function onOpen()
+     {
+	 // consider adding this
+	 //document.getElementById("connection-status").textContent = "Websocket connected";        
+     }
+
+    function onMessage(message){
+	  	websocket.onMessage = function(e) {
+			alert(e.data);
+			}
+			
+	 var parsedMessage = JSON.parse(message.data)
+     	document.getElementById("number").textContent = parsedMessage.number;
+		document.getElementById("date").textContent = parsedMessage.date;
+		document.getElementById("newvariable").textContent = parsedMessage.newvariable;
+		document.getElementById("buttonClick").textContent = parsedMessage.buttonClick;
+	}
+	 
+	function sendMsg() {
+        websocket.send(document.getElementById('msg').value);
+    }
+
+    function sendLedOn() {
+        websocket.send("LEDOn");
+    }
+
+    function sendLedOff() {
+        websocket.send("LEDOff");
+    }
+
+     window.onload = init;
+    </script>
+
+
+    <head>
+	<meta charset="UTF-8">
+    </head>
+	<title> Websocket Test </title>
+    <body>
+	<strong>Message to Send:</strong>&nbsp;<input type="text" id="msg" maxlength="25" />
+    &nbsp;<input type="button" onclick="sendMsg();" value="Send" />
+	<div>
+	<h1>The Text below should change:</h1> 
+	<h2 id="number">this should be a random number</h2>
+	<h3 id="date">This should be the date</h3>
+	<h1>This text shouldn't change</h1>
+	<h4 id="newvariable">This is my new variable</h4>
+	</div>
+    <input type="button" id="buttonOne" onclick="sendLedOn();" value="Turn LED On" />
+    <input type="button" id="buttonOne" onclick="sendLedOff();" value="Turn LED Off" />
+    &nbsp;<strong id="buttonClick"> Server not running</strong>
+    </body>
+</html>
