@@ -8,6 +8,7 @@ import random
 import json
 import serial # if you have not already done so
 import pyowm
+import urllib
 
 PORT = 8888
 SLEEP_TIME = 1
@@ -32,13 +33,18 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.buttonClickMessage = ""
 
     def write_data(self):
-        weather(self)
+        self.temp_max, self.temp_message = weather()
         while self.writetobrowser:
             # Exercise for you overwrite the following with your own values
             # make the time be based off the users time
             #12:09PM on Sep 25, 2016
-            datatosend = { 'number' : str(random.randrange(10,30)), 'date' : time.strftime("%I:%M on %b %d, %Y"), 'newvariable' : 'I have changed what the new variable says', 
-            'buttonClick' : self.buttonClickMessage, 'tempMax' : str(self.temp_max) + '°C', 'tempMessage' : self.temp_message, 'pyNum' : 49}
+            datatosend = { 'ranNum' : str(random.randrange(30,60)),
+                           'date' : time.strftime("%I:%M on %b %d, %Y"),
+                           'newvariable' : 'I have changed what the new variable says',
+                           'buttonClick' : self.buttonClickMessage,
+                           'tempMax' : str(self.temp_max) + '°C',
+                           'tempMessage' : self.temp_message,
+                           'pyNums' : [random.randrange(10, 30) for x in range(7)]}
             self.write_message(datatosend)
             time.sleep(SLEEP_TIME)
 
@@ -52,7 +58,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def check_origin(self, origin):
         return True
 
-    def on_message(self, message): 
+    def on_message(self, message):
         if message == "LEDOn":   #from template.html value="Button"
             print('LED Turned On!')
             self.buttonClickMessage = "LED Turned On!"
@@ -65,7 +71,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             ser.write(b'2')
             time.sleep(2)
             self.buttonClickMessage = ""
-        else: 
+        else:
             print('Message from user: ' + message)
             #self.write_message(u"Received message from browser: " + message)
 
@@ -79,22 +85,28 @@ def make_app():
         (r"/websocket", WebSocketHandler),
     ])
 
-def weather(self):
-    owm = pyowm.OWM(key)  # You MUST provide a valid API key
-    observation = owm.weather_at_place(location)
-    w = observation.get_weather()
+def weather():
+    try:
+        owm = pyowm.OWM(key)  # You MUST provide a valid API key
+        observation = owm.weather_at_place(location)
+        w = observation.get_weather()
 
-    my_dict = w.get_temperature('celsius') 
-    temps = list((my_dict.values())) #seperates the values out of the dict into its own list
-    self.temp_max = temps.pop(2) #seperate out the daily max temp
+        my_dict = w.get_temperature('celsius')
+        temps = list((my_dict.values())) #seperates the values out of the dict into its own list
+        temp_max = temps.pop(2) #seperate out the daily max temp
+    except (urllib.error.HTTPError, pyowm.exceptions.unauthorized_error.UnauthorizedError):
+        temp_max = 99
+        temp_message = "Unable to get data from open weather map"
 
-    if int(self.temp_max) > 20:
-        self.temp_message = ('Temp is over 20°C: watering recommended')
+    if int(temp_max) > 20:
+        temp_message = ('Temp is over 20°C: watering recommended')
     else :
-        self.temp_message = ('Temp is under 20°C: no watering required')
+        temp_message = ('Temp is under 20°C: no watering required')
 
-    print(self.temp_max)
-    print(self.temp_message)
+    print(temp_max)
+    print(temp_message)
+
+    return (temp_max, temp_message)
 
 def start_tornado():
     app = make_app()
