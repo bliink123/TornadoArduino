@@ -38,8 +38,13 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             # Exercise for you overwrite the following with your own values
             # make the time be based off the users time
             #12:09PM on Sep 25, 2016
-            datatosend = { 'number' : str(random.randrange(10,30)), 'date' : time.strftime("%I:%M on %b %d, %Y"), 'newvariable' : 'I have changed what the new variable says',
-            'buttonClick' : self.buttonClickMessage, 'tempMax' : str(self.temp_max) + '°C', 'tempMessage' : self.temp_message, 'pyNum' : 49}
+            datatosend = { 'number' : str(random.randrange(10,30)),
+                           'date' : time.strftime("%I:%M on %b %d, %Y"),
+                           'newvariable' : 'I have changed what the new variable says',
+                           'buttonClick' : self.buttonClickMessage,
+                           'tempMax' : str(self.temp_max) + '°C',
+                           'tempMessage' : self.temp_message,
+                           'pyNums' : [random.randrange(10, 30) for x in range(10)]}
             self.write_message(datatosend)
             time.sleep(SLEEP_TIME)
 
