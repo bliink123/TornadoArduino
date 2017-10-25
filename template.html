@@ -1,51 +1,111 @@
 <html>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js" ></script>
     <script language="javascript" type="text/javascript">
-     
+
      function init()
      {
 	 websocket = new WebSocket("ws://localhost:8888/websocket");
 	 websocket.onopen = onOpen;
 	 websocket.onmessage = onMessage;
 	 //websocket.send = sendMsg;
+	 initChart();
+     }
+
+     function initChart()
+     {
+	 bgcolour= "#FF3579";
+	 brcolour= "#B21349";
+
+	 var ctx = document.getElementById('myChart').getContext('2d');
+	 console.log(numbers)
+	 chart = new Chart(ctx, {
+	     // The type of chart we want to create
+	     type: 'line',
+
+	     // The data for our dataset
+	     data: {
+		 labels: [
+		     "Monday",
+		     "Tuesday",
+		     "Wednesday",
+		     "Thursday",
+		     "Friday",
+		     "Saturday",
+		     "Sunday"
+		 ],
+		 datasets: [{
+		     label: "Moisture Content, Average %",
+		     backgroundColor: bgcolour,
+		     borderColor: brcolour,
+		     data: [
+			 0,
+			 1,
+			 5,
+			 2,
+			 20,
+			 30,
+			 45],
+		 }]
+	     },
+
+	     // Configuration options go here
+	     options: {
+		 scale: {
+		     ticks: {
+			 max: 100
+		     }
+		 },
+
+		 layout: {
+		     padding: {
+			 left: 5,
+			 right: 30,
+			 top: 5,
+			 bottom: 10
+		     }
+		 }
+
+	     }
+	 });
      }
 
      function onOpen()
      {
+	 console.log("websocket open");
 	 // consider adding this
-	 //document.getElementById("connection-status").textContent = "Websocket connected";        
+	 //document.getElementById("connection-status").textContent = "Websocket connected";
      }
 
-    function onMessage(message){
-	  	websocket.onMessage = function(e) {
-			alert(e.data);
-			}
-			
-	 var parsedMessage = JSON.parse(message.data)
-     	document.getElementById("number").textContent = parsedMessage.number;
-		document.getElementById("date").textContent = parsedMessage.date;
-		//document.getElementById("newvariable").textContent = parsedMessage.newvariable;
-		document.getElementById("buttonClick").textContent = parsedMessage.buttonClick;
-		document.getElementById("tempMax").textContent = parsedMessage.tempMax;
-		document.getElementById("tempMessage").textContent = parsedMessage.tempMessage;
-		//var window.number = parseInt(parsedMessage.pyNum) + "<br>";
-	}
-	 
-	function sendMsg() {
-        websocket.send(document.getElementById('msg').value);
-    }
+     function onMessage(message){
+	 var parsedMessage = JSON.parse(message.data);
+     	 document.getElementById("numbers").textContent = parsedMessage.numbers;
+	 document.getElementById("date").textContent = parsedMessage.date;
+	 //document.getElementById("newvariable").textContent = parsedMessage.newvariable;
+	 document.getElementById("buttonClick").textContent = parsedMessage.buttonClick;
+	 document.getElementById("tempMax").textContent = parsedMessage.tempMax;
+	 document.getElementById("tempMessage").textContent = parsedMessage.tempMessage;
+	 numbers = parsedMessage.pyNums;
+	 chart.data.datasets.forEach((dataset) => {
+	     console.log(dataset);
+	     dataset.data = numbers;
+	});
+	 chart.update();
+     }
 
-    function sendLedOn() {
-        websocket.send("LEDOn");
-    }
+     function sendMsg() {
+         websocket.send(document.getElementById('msg').value);
+     }
 
-    function sendLedOff() {
-        websocket.send("LEDOff");
-    }
+     function sendLedOn() {
+         websocket.send("LEDOn");
+     }
+
+     function sendLedOff() {
+         websocket.send("LEDOff");
+     }
 
      window.onload = init;
     </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js" ></script>
 
 
     <head>
@@ -53,86 +113,29 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" type="text/css" href="mystyles.css" />
     </head>
-	<title>GardenBot Data</title>
+    <title>GardenBot Data</title>
     <body>
-	
+
 	<div class="row">
-		<div class="column side">
-			<h5>Message to Send:</h5> &nbsp;
-			<input type="text" id="msg" maxlength="100" /> &nbsp;
-		    <input type="button" onclick="sendMsg();" value="Send" />
-			<h1>The Text below should change:</h1> 
-			<h2 id="number">this should be a random number</h2>
-			<h3 id="date">This should be the date</h3>
-			<h4>The current outside temperature is:</h4>
-			<h2 id="tempMax">tempMax</h2>
-			<h4 id="tempMessage">tempMessage</h4>
-			<input type="button" id="buttonOne" onclick="sendLedOn();" value="Turn Water On" />
-		    <input type="button" id="buttonOne" onclick="sendLedOff();" value="Turn Water Off" />
+	    <div class="column side">
+		<h5>Message to Send:</h5> &nbsp;
+		<input type="text" id="msg" maxlength="100" /> &nbsp;
+		<input type="button" onclick="sendMsg();" value="Send" />
+		<h1>The Text below should change:</h1>
+		<h2 id="numbers">this should be random numbers</h2>
+		<h3 id="date">This should be the date</h3>
+		<h4>The current outside temperature is:</h4>
+		<h2 id="tempMax">tempMax</h2>
+		<h4 id="tempMessage">tempMessage</h4>
+		<input type="button" id="buttonOne" onclick="sendLedOn();" value="Turn Water On" />
+		<input type="button" id="buttonOne" onclick="sendLedOff();" value="Turn Water Off" />
 	    	&nbsp;<strong id="buttonClick"> Server not running</strong>
-		</div>
+	    </div>
 
-		<div class="column middle">
-			<canvas id="myChart"></canvas>
-			<script>
-
-
-			bgcolour= "#FF3579";
-			brcolour= "#B21349";
-
-				var ctx = document.getElementById('myChart').getContext('2d');
-				var chart = new Chart(ctx, {
-					// The type of chart we want to create
-					type: 'line',
-
-					// The data for our dataset
-					data: {
-						labels: [
-						"Monday",
-						"Tuesday", 
-						"Wednesday", 
-						"Thursday", 
-						"Friday", 
-						"Saturday", 
-						"Sunday"
-						],
-						datasets: [{
-							label: "Moisture Content, Average %",
-							backgroundColor: bgcolour,
-							borderColor: brcolour,
-							data: [
-							0, 
-							number, 
-							5, 
-							2, 
-							20, 
-							30, 
-							45],
-						}]
-					}, 
-
-					// Configuration options go here
-					options: {
-						 scale: {
-							ticks: {
-								max: 100
-							}
-					        },
-							
-						layout: {
-							padding: {
-								left: 5,
-								right: 30,
-								top: 5,
-								bottom: 10
-							}
-							}
-						
-						}		
-				});
-			</script>
-		</div>
+	    <div class="column middle">
+		<canvas id="myChart"></canvas>
+	    </div>
 	</div>
-</body>
+    </body>
 
 </html>
