@@ -1,0 +1,45 @@
+<html>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js" ></script>
+    <script language="javascript" type="text/javascript">
+
+     function init()
+     {
+	 websocket = new WebSocket("ws://localhost:8888/websocket");
+	 websocket.onopen = onOpen;
+	 websocket.onmessage = onMessage;
+	 //websocket.send = sendMsg;
+
+     function onOpen()
+     {
+	 console.log();
+	 // consider adding this
+	 //document.getElementById("connection-status").textContent = "Websocket connected";
+     }
+
+     window.onload = init;
+    </script>
+    <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="static/mystyles.css" />
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    </head>
+    <title>GardenBot Data - About</title>
+    <body>
+
+	 <ul>
+	  <li><a href="/">Home</a></li>
+	  <li><a href="#news">News</a></li>
+	  <li><a href="#contact">Contact</a></li>
+	  <li><a class="active" href="about">About</a></li>
+	</ul>
+
+    <div>
+		<h1>About</h1>
+		<h4>This page is a simple webapp that will act as a remote monitor and control system for a vege garden.</h4>
+		<h1></h1>
+		<h1></h1>
+    </div>
+
+    </body>
+</html>
